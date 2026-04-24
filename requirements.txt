@@ -1,5 +1,6 @@
-gradio==4.44.0
-torch==2.2.0
-open-clip-torch==2.24.0
+Flask==3.0.0
+Flask-CORS==4.0.0
+Flask-Limiter==3.5.0
+python-dotenv==1.0.0
 Pillow==10.2.0
 numpy==1.26.4
