@@ -1,578 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake Logo Detector — Angry Birds Edition</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
-
-*{box-sizing:border-box;margin:0;padding:0}
-
-body{
-  font-family:'Nunito',sans-serif;
-  min-height:100vh;
-  background:#1a0a00;
-  overflow-x:hidden;
-  position:relative;
-}
-
-/* ── Sky background ── */
-.sky{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:linear-gradient(180deg,#0a1628 0%,#1a2d5a 40%,#2d1a00 70%,#1a0a00 100%);
-  z-index:0;
-}
-
-/* ── Stars ── */
-.stars{position:fixed;top:0;left:0;width:100%;height:60%;z-index:1;pointer-events:none}
-.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 2s infinite alternate}
-@keyframes twinkle{0%{opacity:.2;transform:scale(1)}100%{opacity:1;transform:scale(1.3)}}
-
-/* ── Ground ── */
-.ground{
-  position:fixed;bottom:0;left:0;width:100%;height:80px;
-  background:linear-gradient(180deg,#2d5a00 0%,#1a3a00 100%);
-  z-index:1;
-  border-top:4px solid #4a8a00;
-}
-.ground::before{
-  content:'';position:absolute;top:-20px;left:0;width:100%;height:24px;
-  background:radial-gradient(ellipse 40px 20px at 20% 100%,#3a7a00 50%,transparent 50%),
-             radial-gradient(ellipse 60px 24px at 50% 100%,#4a8a00 50%,transparent 50%),
-             radial-gradient(ellipse 30px 16px at 80% 100%,#3a7a00 50%,transparent 50%);
-}
-
-/* ── Slingshot ── */
-.slingshot{
-  position:fixed;bottom:70px;left:60px;width:50px;height:100px;z-index:2;
-  pointer-events:none;
-}
-.slingshot::before{
-  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-  width:8px;height:80px;
-  background:linear-gradient(90deg,#8B4513,#A0522D,#8B4513);
-  border-radius:4px;
-}
-.slingshot::after{
-  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:40px;height:30px;
-  border:6px solid #A0522D;
-  border-bottom:none;
-  border-radius:20px 20px 0 0;
-}
-
-/* ── Clouds ── */
-.cloud{
-  position:fixed;z-index:2;pointer-events:none;
-  background:#fff;border-radius:50px;opacity:.15;
-  animation:float linear infinite;
-}
-@keyframes float{0%{transform:translateX(-200px)}100%{transform:translateX(110vw)}}
-
-/* ── Pig tower ── */
-.pig-tower{
-  position:fixed;right:80px;bottom:70px;z-index:2;
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  pointer-events:none;
-}
-.plank{width:60px;height:12px;background:linear-gradient(90deg,#8B6914,#C8A020,#8B6914);border-radius:3px;border:1px solid #6B4A0A}
-.pig{
-  width:36px;height:36px;background:radial-gradient(circle at 40% 35%,#90EE5A,#4CAF20);
-  border-radius:50%;border:2px solid #2d7a00;
-  display:flex;align-items:center;justify-content:center;font-size:16px;
-  position:relative;
-}
-.pig::before{content:'👀';font-size:10px;position:absolute;top:6px}
-.pig::after{content:'🐽';font-size:9px;position:absolute;bottom:5px}
-
-/* ── Main container ── */
-.container{
-  position:relative;z-index:10;
-  max-width:600px;margin:0 auto;
-  padding:20px 16px 120px;
-}
-
-/* ── Header ── */
-.header{text-align:center;padding:30px 0 24px}
-.bird-logo{font-size:72px;margin-bottom:8px;display:block;animation:bounce 1.5s ease-in-out infinite}
-@keyframes bounce{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-12px) rotate(5deg)}}
-.header h1{
-  font-family:'Fredoka One',cursive;
-  font-size:36px;color:#ff6b00;
-  text-shadow:3px 3px 0 #8B2500,0 0 20px #ff4400;
-  margin-bottom:6px;letter-spacing:1px;
-}
-.header p{font-size:14px;color:#ffaa55;font-weight:600}
-.header .subtitle{
-  display:inline-block;margin-top:8px;
-  background:#ff6b00;color:#fff;
-  font-size:12px;font-weight:700;
-  padding:4px 14px;border-radius:99px;
-  text-transform:uppercase;letter-spacing:1px;
-}
-
-/* ── Card ── */
-.card{
-  background:rgba(255,255,255,0.07);
-  border:2px solid rgba(255,107,0,0.3);
-  border-radius:24px;
-  padding:24px;
-  margin-bottom:16px;
-  backdrop-filter:blur(10px);
-  box-shadow:0 8px 32px rgba(255,107,0,0.1);
-}
-
-/* ── Upload box ── */
-.upload-box{
-  border:3px dashed rgba(255,107,0,0.4);
-  border-radius:20px;
-  padding:36px 20px;
-  text-align:center;
-  cursor:pointer;
-  transition:all .25s;
-  background:rgba(255,107,0,0.05);
-  position:relative;
-  overflow:hidden;
-}
-.upload-box:hover{
-  border-color:#ff6b00;
-  background:rgba(255,107,0,0.12);
-  transform:scale(1.01);
-}
-.upload-box.dragover{
-  border-color:#ffcc00;
-  background:rgba(255,204,0,0.1);
-  transform:scale(1.02);
-}
-.upload-bird{font-size:52px;margin-bottom:10px;display:block;transition:transform .2s}
-.upload-box:hover .upload-bird{transform:scale(1.15) rotate(-10deg)}
-.upload-box h3{font-size:16px;font-weight:700;color:#ffcc00;margin-bottom:4px;font-family:'Fredoka One',cursive}
-.upload-box p{font-size:12px;color:#ff9944}
-
-/* ── Preview ── */
-.preview{display:none;text-align:center;margin-bottom:16px}
-.preview-wrapper{
-  display:inline-block;
-  padding:8px;border-radius:16px;
-  background:rgba(255,107,0,0.1);
-  border:2px solid rgba(255,107,0,0.3);
-}
-.preview img{
-  max-width:160px;max-height:160px;
-  border-radius:12px;object-fit:contain;
-  background:#1a1a1a;display:block;
-}
-.preview p{font-size:12px;color:#ff9944;margin-top:8px;font-weight:600}
-
-/* ── Buttons ── */
-.btn-detect{
-  width:100%;padding:16px;border-radius:16px;border:none;
-  font-family:'Fredoka One',cursive;
-  font-size:20px;letter-spacing:1px;
-  cursor:pointer;transition:all .2s;
-  background:linear-gradient(135deg,#ff6b00,#ff3300);
-  color:#fff;
-  box-shadow:0 6px 0 #8B2500,0 8px 20px rgba(255,107,0,0.4);
-  text-shadow:1px 1px 0 rgba(0,0,0,0.3);
-  margin-bottom:10px;
-}
-.btn-detect:hover:not(:disabled){
-  transform:translateY(-2px);
-  box-shadow:0 8px 0 #8B2500,0 12px 24px rgba(255,107,0,0.5);
-}
-.btn-detect:active:not(:disabled){
-  transform:translateY(4px);
-  box-shadow:0 2px 0 #8B2500;
-}
-.btn-detect:disabled{
-  background:linear-gradient(135deg,#555,#333);
-  color:#888;cursor:not-allowed;
-  box-shadow:0 4px 0 #222;
-}
-.btn-clear{
-  width:100%;padding:12px;border-radius:14px;
-  border:2px solid rgba(255,107,0,0.3);
-  background:transparent;color:#ff9944;
-  font-size:14px;font-weight:700;cursor:pointer;
-  transition:all .2s;display:none;
-}
-.btn-clear:hover{background:rgba(255,107,0,0.1);border-color:#ff6b00}
-
-/* ── Loading ── */
-.loading{display:none;text-align:center;padding:24px 0}
-.bird-spin{font-size:48px;display:block;animation:spin-fly 0.6s linear infinite}
-@keyframes spin-fly{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
-.loading p{font-size:14px;color:#ffaa55;font-weight:600;margin-top:8px}
-
-/* ── Result ── */
-.result{display:none;border-radius:20px;padding:24px;text-align:center;margin-top:8px}
-.result.authentic{
-  background:linear-gradient(135deg,rgba(0,180,0,0.15),rgba(0,100,0,0.15));
-  border:2px solid #00cc44;
-}
-.result.fake{
-  background:linear-gradient(135deg,rgba(255,0,0,0.15),rgba(150,0,0,0.15));
-  border:2px solid #ff3333;
-}
-.result.unknown{
-  background:linear-gradient(135deg,rgba(255,200,0,0.15),rgba(150,100,0,0.15));
-  border:2px solid #ffcc00;
-}
-.result-emoji{font-size:64px;margin-bottom:10px;display:block;animation:pop .4s cubic-bezier(0.175,0.885,0.32,1.275)}
-@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
-.result-verdict{
-  font-family:'Fredoka One',cursive;
-  font-size:32px;margin-bottom:6px;
-}
-.result.authentic .result-verdict{color:#00ff66;text-shadow:0 0 20px #00cc44}
-.result.fake .result-verdict{color:#ff4444;text-shadow:0 0 20px #cc0000}
-.result.unknown .result-verdict{color:#ffcc00;text-shadow:0 0 20px #cc9900}
-.result-msg{font-size:14px;font-weight:600;margin-bottom:16px;opacity:.85}
-.result.authentic .result-msg{color:#88ffaa}
-.result.fake .result-msg{color:#ffaaaa}
-.result.unknown .result-msg{color:#ffeeaa}
-
-/* ── Score bar ── */
-.score-label{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px}
-.score-bar-bg{background:rgba(0,0,0,0.3);border-radius:99px;height:12px;overflow:hidden;margin-bottom:16px;border:1px solid rgba(255,255,255,0.1)}
-.score-bar{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1)}
-.result.authentic .score-bar{background:linear-gradient(90deg,#00cc44,#00ff88)}
-.result.fake .score-bar{background:linear-gradient(90deg,#cc0000,#ff4444)}
-.result.unknown .score-bar{background:linear-gradient(90deg,#cc9900,#ffcc00)}
-
-/* ── Detail cards ── */
-.result-details{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.detail-card{
-  background:rgba(0,0,0,0.25);
-  border-radius:12px;padding:12px;
-  border:1px solid rgba(255,255,255,0.08);
-}
-.detail-label{font-size:11px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.detail-value{font-size:16px;font-weight:800;color:#fff}
-
-/* ── Error ── */
-.error-box{
-  display:none;background:rgba(255,0,0,0.1);
-  border:2px solid #cc0000;border-radius:14px;
-  padding:14px 16px;margin-top:12px;
-  font-size:13px;color:#ff8888;font-weight:600;
-  text-align:center;
-}
-
-/* ── Brands ── */
-.brands-section{margin-top:8px}
-.brands-header{
-  font-family:'Fredoka One',cursive;
-  font-size:16px;color:#ffcc00;
-  text-align:center;margin-bottom:12px;
-}
-.brands-list{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.brand-pill{
-  font-size:11px;padding:5px 12px;
-  border-radius:99px;font-weight:700;
-  background:rgba(255,107,0,0.1);
-  border:1px solid rgba(255,107,0,0.25);
-  color:#ffaa55;transition:all .15s;cursor:default;
-}
-.brand-pill:hover{background:rgba(255,107,0,0.25);border-color:#ff6b00;color:#ffcc00}
-
-/* ── Footer ── */
-.footer{
-  text-align:center;padding:20px 0 10px;
-  font-size:12px;color:rgba(255,170,85,0.5);font-weight:600;
-}
-.footer a{color:#ff6b00;text-decoration:none}
-.footer a:hover{color:#ffcc00}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#1a0a00}
-::-webkit-scrollbar-thumb{background:#ff6b00;border-radius:3px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Logo Detector</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🔍</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+        .upload-area.dragging {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .upload-text {
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .upload-hint {
+            color: #999;
+            font-size: 12px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .result.authentic {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .result.fake {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        .result.unknown {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .result-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .result-details {
+            font-size: 14px;
+            color: #555;
+        }
+        .result-detail-row {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8d7da;
+            border-radius: 8px;
+            display: none;
+        }
+        .error.show {
+            display: block;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #0c5aa0;
+        }
+        code {
+            background: #d0e8ff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>🔍 Fake Logo Detector</h1>
+        <p class="subtitle">Upload a logo to check if it's authentic</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">Click to upload or drag & drop</div>
+            <div class="upload-hint">PNG, JPG, GIF, WebP, BMP (max 10MB)</div>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
 
-<div class="sky"></div>
-<div class="stars" id="stars"></div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing image...</p>
+        </div>
 
-<!-- Clouds -->
-<div class="cloud" style="width:120px;height:40px;top:8%;animation-duration:30s;animation-delay:0s"></div>
-<div class="cloud" style="width:80px;height:28px;top:15%;animation-duration:45s;animation-delay:-15s"></div>
-<div class="cloud" style="width:160px;height:50px;top:5%;animation-duration:60s;animation-delay:-30s"></div>
+        <div class="result" id="result"></div>
+        <div class="error" id="error"></div>
 
-<!-- Slingshot -->
-<div class="slingshot"></div>
-
-<!-- Pig Tower -->
-<div class="pig-tower">
-  <div class="pig"></div>
-  <div class="plank"></div>
-  <div class="pig"></div>
-  <div class="plank"></div>
-  <div class="plank"></div>
-</div>
-
-<!-- Ground -->
-<div class="ground"></div>
-
-<div class="container">
-
-  <!-- Header -->
-  <div class="header">
-    <span class="bird-logo">🐦</span>
-    <h1>LOGO DETECTOR</h1>
-    <p>Angry Birds — Brand Authentication System</p>
-    <span class="subtitle">Powered by CLIP AI</span>
-  </div>
-
-  <!-- Upload card -->
-  <div class="card">
-    <div class="upload-box" id="uploadBox">
-      <span class="upload-bird">🐦</span>
-      <h3>Launch Your Logo!</h3>
-      <p>Click to select or drag &amp; drop — PNG, JPG, WEBP, max 10MB</p>
-      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/bmp" style="display:none">
+        <div class="info-box" id="infoBox">
+            <strong>ℹ️ Getting Started:</strong><br><br>
+            The database is currently empty. Add brand logos using the <code>/add-brand</code> API endpoint:<br><br>
+            <code style="display: block; padding: 8px; background: #fff; margin-top: 8px; border-radius: 4px; overflow-x: auto;">
+POST /add-brand HTTP/1.1<br>
+X-API-Key: your-api-key<br>
+Content-Type: multipart/form-data<br><br>
+brand_name=apple&image=@logo.png
+            </code>
+        </div>
     </div>
 
-    <div class="preview" id="preview">
-      <div class="preview-wrapper">
-        <img id="previewImg" src="" alt="Logo preview">
-      </div>
-      <p id="previewName"></p>
-    </div>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const error = document.getElementById('error');
+        const infoBox = document.getElementById('infoBox');
 
-    <div class="error-box" id="errorBox"></div>
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                analyzeImage();
+            }
+        });
 
-    <div style="margin-top:16px">
-      <button class="btn-detect" id="detectBtn" disabled>🎯 FIRE! Detect Logo</button>
-      <button class="btn-clear" id="clearBtn">✕ Clear &amp; Reset</button>
-    </div>
-  </div>
+        fileInput.addEventListener('change', analyzeImage);
 
-  <!-- Loading -->
-  <div class="loading" id="loading">
-    <span class="bird-spin">🐦</span>
-    <p>Bird is flying... Analysing logo with AI!</p>
-  </div>
+        async function analyzeImage() {
+            const file = fileInput.files[0];
+            if (!file) return;
 
-  <!-- Result card -->
-  <div class="result" id="result">
-    <span class="result-emoji" id="resultEmoji"></span>
-    <div class="result-verdict" id="resultVerdict"></div>
-    <div class="result-msg" id="resultMsg"></div>
-    <div class="score-label">
-      <span style="color:rgba(255,255,255,0.5)">Similarity</span>
-      <span id="scoreText" style="color:#fff;font-weight:800"></span>
-    </div>
-    <div class="score-bar-bg">
-      <div class="score-bar" id="scoreBar" style="width:0%"></div>
-    </div>
-    <div class="result-details">
-      <div class="detail-card">
-        <div class="detail-label">Score</div>
-        <div class="detail-value" id="detailScore"></div>
-      </div>
-      <div class="detail-card">
-        <div class="detail-label">Matched brand</div>
-        <div class="detail-value" id="detailBrand"></div>
-      </div>
-    </div>
-  </div>
+            loading.classList.add('show');
+            result.classList.remove('show');
+            error.classList.remove('show');
+            infoBox.style.display = 'none';
 
-  <!-- Brands -->
-  <div class="card brands-section">
-    <div class="brands-header">🐷 50 Brands in the Pig Castle</div>
-    <div class="brands-list" id="brandsList">
-      <div class="brand-pill">Loading...</div>
-    </div>
-  </div>
+            const formData = new FormData();
+            formData.append('image', file);
 
-  <div class="footer">
-    Built by <strong style="color:#ff6b00">Gunasekar</strong> &nbsp;|&nbsp;
-    CLIP ViT-B/32 &nbsp;|&nbsp;
-    <a href="https://github.com/gunasekar05042005-dot/Fake-Logo-Detector" target="_blank">GitHub ↗</a>
-  </div>
+            try {
+                const response = await fetch('/detect', {
+                    method: 'POST',
+                    body: formData
+                });
 
-</div>
+                const data = await response.json();
+                loading.classList.remove('show');
 
-<script>
-  // ── Stars ─────────────────────────────────
-  (function(){
-    var s=document.getElementById('stars');
-    for(var i=0;i<80;i++){
-      var d=document.createElement('div');
-      d.className='star';
-      var size=Math.random()*3+1;
-      d.style.cssText='width:'+size+'px;height:'+size+'px;'
-        +'top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;'
-        +'animation-delay:'+Math.random()*3+'s;'
-        +'animation-duration:'+(1.5+Math.random()*2)+'s';
-      s.appendChild(d);
-    }
-  })();
+                if (data.success) {
+                    displayResult(data.result);
+                    infoBox.style.display = 'block';
+                } else {
+                    showError(data.error || 'Detection failed');
+                    infoBox.style.display = 'block';
+                }
+            } catch (err) {
+                loading.classList.remove('show');
+                showError('Network error: ' + err.message);
+                infoBox.style.display = 'block';
+            }
+        }
 
-  var selectedFile=null;
-  var fileInput=document.getElementById('fileInput');
-  var uploadBox=document.getElementById('uploadBox');
-  var preview=document.getElementById('preview');
-  var previewImg=document.getElementById('previewImg');
-  var previewName=document.getElementById('previewName');
-  var detectBtn=document.getElementById('detectBtn');
-  var clearBtn=document.getElementById('clearBtn');
-  var errorBox=document.getElementById('errorBox');
+        function displayResult(res) {
+            const verdictClass = res.verdict.toLowerCase();
+            result.className = `result show ${verdictClass}`;
+            result.innerHTML = `
+                <div class="result-title">${res.verdict}</div>
+                <div class="result-details">
+                    <div class="result-detail-row">
+                        <span>Confidence:</span>
+                        <strong>${res.confidence}</strong>
+                    </div>
+                    <div class="result-detail-row">
+                        <span>Similarity:</span>
+                        <strong>${(res.similarity_score * 100).toFixed(1)}%</strong>
+                    </div>
+                    ${res.matched_brand ? `
+                    <div class="result-detail-row">
+                        <span>Matched Brand:</span>
+                        <strong>${res.matched_brand}</strong>
+                    </div>
+                    ` : ''}
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+                        ${res.message}
+                    </div>
+                </div>
+            `;
+        }
 
-  uploadBox.addEventListener('click',function(){fileInput.click()});
-
-  fileInput.addEventListener('change',function(){
-    if(fileInput.files&&fileInput.files[0]){
-      selectedFile=fileInput.files[0];
-      showPreview(selectedFile);
-    }
-  });
-
-  uploadBox.addEventListener('dragover',function(e){
-    e.preventDefault();e.stopPropagation();
-    uploadBox.classList.add('dragover');
-  });
-
-  uploadBox.addEventListener('dragleave',function(e){
-    e.preventDefault();
-    uploadBox.classList.remove('dragover');
-  });
-
-  uploadBox.addEventListener('drop',function(e){
-    e.preventDefault();e.stopPropagation();
-    uploadBox.classList.remove('dragover');
-    if(e.dataTransfer.files&&e.dataTransfer.files[0]){
-      selectedFile=e.dataTransfer.files[0];
-      showPreview(selectedFile);
-    }
-  });
-
-  function showPreview(file){
-    var reader=new FileReader();
-    reader.onload=function(e){
-      previewImg.src=e.target.result;
-      previewName.textContent=file.name+' ('+(file.size/1024).toFixed(1)+' KB)';
-      preview.style.display='block';
-      detectBtn.disabled=false;
-      clearBtn.style.display='block';
-      document.getElementById('result').style.display='none';
-      document.getElementById('loading').style.display='none';
-      errorBox.style.display='none';
-    };
-    reader.readAsDataURL(file);
-  }
-
-  clearBtn.addEventListener('click',function(){
-    selectedFile=null;fileInput.value='';
-    preview.style.display='none';
-    detectBtn.disabled=true;
-    clearBtn.style.display='none';
-    document.getElementById('result').style.display='none';
-    document.getElementById('loading').style.display='none';
-    errorBox.style.display='none';
-  });
-
-  detectBtn.addEventListener('click',function(){
-    if(!selectedFile){showError('Please select a logo image first!');return;}
-    runDetection();
-  });
-
-  function runDetection(){
-    detectBtn.disabled=true;
-    document.getElementById('loading').style.display='block';
-    document.getElementById('result').style.display='none';
-    errorBox.style.display='none';
-
-    var formData=new FormData();
-    formData.append('image',selectedFile,selectedFile.name);
-
-    var xhr=new XMLHttpRequest();
-    xhr.open('POST','/detect',true);
-
-    xhr.onload=function(){
-      document.getElementById('loading').style.display='none';
-      detectBtn.disabled=false;
-      if(xhr.status===200){
-        try{
-          var data=JSON.parse(xhr.responseText);
-          if(data.success){showResult(data.result);}
-          else{showError('Error: '+data.error);}
-        }catch(e){showError('Could not read server response.');}
-      } else {
-        try{
-          var err=JSON.parse(xhr.responseText);
-          showError('Server error: '+(err.error||xhr.status));
-        }catch(e){showError('Server error '+xhr.status);}
-      }
-    };
-
-    xhr.onerror=function(){
-      document.getElementById('loading').style.display='none';
-      detectBtn.disabled=false;
-      showError('Network error. Check connection and try again.');
-    };
-
-    xhr.send(formData);
-  }
-
-  function showResult(r){
-    var resultDiv=document.getElementById('result');
-    var verdict=r.verdict;
-    var score=r.similarity_score;
-
-    resultDiv.className='result '+verdict.toLowerCase();
-    resultDiv.style.display='block';
-
-    var emojis={
-      'AUTHENTIC': '🎉',
-      'FAKE':      '💥',
-      'UNKNOWN':   '🤔'
-    };
-    document.getElementById('resultEmoji').textContent=emojis[verdict]||'❓';
-    document.getElementById('resultVerdict').textContent=verdict;
-    document.getElementById('resultMsg').textContent=r.confidence+' confidence — '+r.message;
-    document.getElementById('detailScore').textContent=(score*100).toFixed(1)+'%';
-    document.getElementById('detailBrand').textContent=
-      r.matched_brand
-        ? r.matched_brand.charAt(0).toUpperCase()+r.matched_brand.slice(1)
-        : 'None';
-    document.getElementById('scoreText').textContent=(score*100).toFixed(1)+'%';
-
-    setTimeout(function(){
-      document.getElementById('scoreBar').style.width=(score*100)+'%';
-    },100);
-  }
-
-  function showError(msg){
-    errorBox.textContent='💢 '+msg;
-    errorBox.style.display='block';
-  }
-
-  function loadBrands(){
-    var xhr=new XMLHttpRequest();
-    xhr.open('GET','/brands',true);
-    xhr.onload=function(){
-      if(xhr.status===200){
-        try{
-          var data=JSON.parse(xhr.responseText);
-          var list=document.getElementById('brandsList');
-          list.innerHTML='';
-          data.brands.forEach(function(b){
-            var pill=document.createElement('div');
-            pill.className='brand-pill';
-            pill.textContent=b.charAt(0).toUpperCase()+b.slice(1);
-            list.appendChild(pill);
-          });
-        }catch(e){}
-      }
-    };
-    xhr.send();
-  }
-
-  loadBrands();
-</script>
+        function showError(msg) {
+            error.textContent = msg;
+            error.classList.add('show');
+        }
+    </script>
 </body>
 </html>
